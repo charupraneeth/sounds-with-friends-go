@@ -42,7 +42,7 @@
 
     <script>
       const socket = new WebSocket(
-        `${window.location === "https" ? "wss" : "ws"}://${
+        `${window.location.protocol === "https" ? "wss" : "ws"}://${
           window.location.hostname
         }${window.location.port ? ":" + window.location.port : ""}/ws`
       );

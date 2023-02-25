@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Sounds with friends</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        position: relative;
+      }
+      main {
+        padding: 1rem;
+      }
+      .cover {
+        position: absolute;
+        width: 100vw;
+        height: 100vh;
+        background: black;
+        color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 3rem;
+      }
+      button {
+        padding: 1.75rem;
+        font-size: 1.4rem;
+        margin-right: 1rem;
+        margin-top: 1rem;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="cover">Click/Tap to start</div>
+    <main>
+      <button onclick="playSound('peter-laugh')">Peter</button>
+      <button onclick="playSound('quagmire-giggity')">Quagmire giggity</button>
+      <button onclick="playSound('quagmire')">Quagmire</button>
+      <button onclick="playSound('windows-error')">Windows error</button>
+    </main>
+
+    <script>
+      const socket = new WebSocket("ws://localhost:8080/ws");
+      socket.onopen = function () {
+        console.log("Status: Connected\n");
+      };
+
+      const coverElement = document.querySelector(".cover");
+      let isCoverRemoved = false;
+      coverElement.addEventListener("click", () => {
+        if (isCoverRemoved) return;
+        coverElement.style.display = "none";
+        isCoverRemoved = true;
+      });
+      let globalSoundName;
+      let mainAudio;
+
+      function playSound(soundName, shouldNotEmit = false) {
+        globalSoundName = soundName;
+        console.log({ soundName });
+        if (mainAudio) {
+          mainAudio.pause();
+        }
+        mainAudio = new Audio(`${soundName}.mp3`);
+        mainAudio.play();
+
+        if (!shouldNotEmit)
+          socket.send(
+            JSON.stringify({
+              action: "play sound",
+              data: {
+                soundName,
+              },
+            })
+          );
+      }
+
+      socket.onmessage = function (e) {
+        const { data } = e;
+        const { action, data: serverData } = JSON.parse(data);
+        if (action === "play sound") {
+          playSound(serverData?.soundName, true);
+        }
+      };
+      // socket.on("play sound", function (songName) {
+      //   playSound(songName, true);
+      // });
+    </script>
+  </body>
+</html>

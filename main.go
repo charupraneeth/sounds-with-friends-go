@@ -4,6 +4,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"sync"
 
 	"github.com/gorilla/websocket"
@@ -26,6 +27,12 @@ var (
 )
 
 func main() {
+
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080" // Default to port 8080 if PORT is not set.
+	}
+
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		conn, _ := upgrader.Upgrade(w, r, nil) // error ignored for sake of simplicity
 
@@ -79,5 +86,9 @@ func main() {
 	fs := http.FileServer(http.Dir("static/"))
 	http.Handle("/", http.StripPrefix("/", fs))
 
-	http.ListenAndServe(":8080", nil)
+	fmt.Printf("Listening on port %s...\n", port)
+	err := http.ListenAndServe(":"+port, nil)
+	if err != nil {
+		panic(err)
+	}
 }

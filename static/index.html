@@ -41,7 +41,11 @@
     </main>
 
     <script>
-      const socket = new WebSocket("ws://localhost:8080/ws");
+      const socket = new WebSocket(
+        `ws://${window.location.hostname}${
+          window.location.port ? ":" + window.location.port : ""
+        }/ws`
+      );
       socket.onopen = function () {
         console.log("Status: Connected\n");
       };
